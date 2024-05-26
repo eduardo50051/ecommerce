@@ -1,5 +1,8 @@
 <?php 
 
+//ini_set('display_errors', 1);
+//ini_set('display_startup_errors', 1);
+//error_reporting(E_ALL);
 
 
 
@@ -107,6 +110,15 @@ $app->get("/admin/users/create", function(){
 $app->get("/admin/users/:iduser/delete", function($iduser) {
 
 	User::verifyLogin();
+
+	$user= new User();
+
+	$user->get((int)$iduser);
+
+	$user->delete();
+
+	header("Location: /ecommerce/admin/users");
+	exit;
  
 
 });
@@ -143,7 +155,7 @@ $app->post("/admin/users/create", function() {
  
 	$user->save();
 
-	header("Location:/ecommerce/admin/users");
+	header("Location: /ecommerce/admin/users");
 	exit;
 
 });
@@ -152,7 +164,19 @@ $app->post("/admin/users/create", function() {
 $app->post("/admin/users/:iduser", function($iduser) {
 
 	User::verifyLogin();
+
+	$user = new User();
  
+	$_POST["inadmin"] = (isset($_POST["inadmin"]))?1:0;
+
+	$user->get((int)$iduser);
+
+	$user->setData($_POST);
+
+	$user->update();
+
+	header("Location: /ecommerce/admin/users");
+	exit;
 
 });
 

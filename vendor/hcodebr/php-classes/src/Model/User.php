@@ -109,15 +109,48 @@ class User extends Model{
         $results = $sql->select("CALL sp_users_save(:desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
             ":desperson"=>$this->getdesperson(),
             ":deslogin"=>$this->getdeslogin(),
-            ":despassword"=>$this->despassword(),
-            ":desemail"=>$this->desemail(),
-            ":nrphone"=>$this->desrnphone(),
+            ":despassword"=>$this->getdespassword(),
+            ":desemail"=>$this->getdesemail(),
+            ":nrphone"=>$this->getnrphone(),
             ":inadmin"=>$this->getinadmin()
         ));
 
         $this->setData($results[0]);
 
      }
+
+     
+     public function update(){
+
+        $sql = new SqL();
+
+
+        $results = $sql->select("CALL sp_usersupdate_save(:iduser, :desperson, :deslogin, :despassword, :desemail, :nrphone, :inadmin)", array(
+            ":iduser"=>$this->getiduser(),
+            ":desperson"=>$this->getdesperson(),
+            ":deslogin"=>$this->getdeslogin(),
+            ":despassword"=>$this->getdespassword(),
+            ":desemail"=>$this->getdesemail(),
+            ":nrphone"=>$this->getnrphone(),
+            ":inadmin"=>$this->getinadmin()
+        ));
+
+        $this->setData($results[0]);
+
+
+
+    }
+
+    public function delete(){
+
+        $sql = new SqL();
+
+        $sql->query("CALL sp_users_delete(:iduser)", array(
+            ":iduser"=>$this->getiduser()
+        ));
+
+
+    }
 
 
 }
