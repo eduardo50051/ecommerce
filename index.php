@@ -76,8 +76,7 @@ $app->get('/admin/logout', function(){
 
 $app->get("/admin/users", function(){
 
-
-	User::verifyLogin();
+    User::verifyLogin();
 
 	$users = User::listAll();
 
@@ -145,11 +144,17 @@ $app->get("/admin/users/:iduser", function($iduser){
 
 $app->post("/admin/users/create", function() {
 
-	User::verifyLogin();
+   User::verifyLogin();
 
 	$user = new User();
 
 	$_POST["inadmin"] = (isset($_POST["inadmin"]))?1:0;
+
+	$_POST['despassword'] = password_hash($_POST["despassword"], PASSWORD_DEFAULT, [
+ 
+		"cost"=>12
+		
+	]);
 
 	$user->setData($_POST);
  
@@ -182,6 +187,42 @@ $app->post("/admin/users/:iduser", function($iduser) {
 
 
 
+$app->get("/admin/forgot", function() {
+
+	$page = new PageAdmin([
+		"header"=>false,
+		"footer"=>false
+
+	]);
+
+	$page->setTpl("forgot");
+
+
+
+});
+
+$app->post("/ecommerce/admin/forgot", function(){
+
+	$user = User::getForgot($_POST["email"]);
+
+	header("Location: /admin/forgot/sent");
+	exit;
+
+});
+
+$app->post("/admin/forgot/sent", function(){
+
+	
+	$page = new PageAdmin([
+		"header"=>false,
+		"footer"=>false
+
+	]);
+
+	$page->setTpl("forgot-sent");
+
+
+});
 
 
 
