@@ -14,7 +14,7 @@ use \Slim\Slim;
 use \Hcode\Page;
 use \Hcode\PageAdmin;
 use \Hcode\Model\User;
-
+use \Hcode\Model\Category;
 
 $app = new Slim();
 
@@ -197,20 +197,17 @@ $app->get("/admin/forgot", function() {
 
 	$page->setTpl("forgot");
 
-
-
 });
 
 $app->post("/ecommerce/admin/forgot", function(){
 
 	$user = User::getForgot($_POST["email"]);
-
 	header("Location: /admin/forgot/sent");
 	exit;
 
 });
 
-$app->post("/admin/forgot/sent", function(){
+$app->get("/admin/forgot/sent", function(){
 
 	
 	$page = new PageAdmin([
@@ -220,6 +217,44 @@ $app->post("/admin/forgot/sent", function(){
 	]);
 
 	$page->setTpl("forgot-sent");
+
+
+});
+
+
+$app->get("/admin/categories", function() {
+
+	$categories = Category::listAll();
+
+	$page = new PageAdmin();
+
+	$page->setTpl("categories", [
+		'categories'=>$categories
+	]);
+
+
+});
+
+
+$app->get("/admin/categories/create", function() {
+
+	$page = new PageAdmin();
+
+	$page->setTpl("categories-create");
+
+
+});
+
+$app->post("/admin/categories/create", function() {
+
+$category = new Category();
+
+$category->setData($_POST);
+
+$category->save();
+
+header('Location: /ecommerce/admin/categories');
+exit;
 
 
 });
