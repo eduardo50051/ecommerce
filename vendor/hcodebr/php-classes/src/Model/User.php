@@ -4,7 +4,7 @@ namespace Hcode\Model;
 
 use \Hcode\DB\Sql;
 use \Hcode\Model;
-
+use \Hcode\Mailer;
 
 class User extends Model{
 
@@ -153,64 +153,74 @@ class User extends Model{
 
     }
 
-    public static function getForgot($email){
+    public static function getForgot($email, $inadmin = true)
+	{
 
-        $sql = new SqL();
+		$sql = new Sql();
 
-        $results = $sql->select("SELECT * FROM tb_persons a INNER JOIN tb_users b USING(idperson) WHERE a.desemail = :email;", array(
-            ":email"=>$email
-            ));
-        
-        if (count($results) === 0){
+		$results = $sql->select("
+			SELECT *
+			FROM tb_persons a
+			INNER JOIN tb_users b USING(idperson)
+			WHERE a.desemail = :email;
+		", array(
+			":email"=>$email
+		));
 
-            throw new \Exception("Nao foi possivel recuperar a senha.");
-            
+		if (count($results) === 0)
+		{
+			throw new \Exception("Não foi possível recuperar a senha.");
+			
+		}
+		else
+		{
 
-        }else{
+			$data = $results[0];
 
-            $data = $results[0];
+			$results2 = $sql->select("CALL sp_userspasswordsrecoveries_create(:iduser, :desip)", array(
+				":iduser"=>$data["iduser"],
+				":desip"=>$_SERVER["REMOTE_ADDR"]
+			));
 
-            $results2 = $sql->select("CALL sp_userspasswordsrecoveries_create(:iduser, :desip)", array(
-                ":iduser"=>$data["iduser"],
-                ":desip"=>$_SERVER["REMOTE_ADDR"]
-            ));
+			if (count($results2) === 0)
+			{
 
-            if (count($results2) === 0){
+				throw new \Exception("Não foi possível recuperar a senha");
 
-                throw new \Exception("Nao foi possivel recuperar a senha.");
+			}
+			else
+			{
 
-            }else{
+				$dataRecovery = $results2[0];
 
-                $dataRecovery = $results2[0];
-
-                $code = openssl_encrypt($dataRecovery['idrecovery'], 'AES-128-CBC', pack("a16", User::SECRET), 0, pack("a16", User::SECRET_IV));
-
-				$code = base64_encode($code);
+				$code = base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_128, User::SECRET, $dataRecovery["idrecovery"], MCRYPT_MODE_ECB));
 
 				if ($inadmin === true) {
+					
+					$link = "http://www.hcodecommerce.com.br/admin/forgot/reset?code=$code";
 
-					$link = "localhost/ecommerce/admin/forgot/reset?code=$code";
 				} else {
 
-					$link = "localhost/ecommerce/forgot/reset?code=$code";
+					$link = "http://www.hcodecommerce.com.br/forgot/reset?code=$code";
+
 				}
 
-				$mailer = new Mailer($data['desemail'], $data['desperson'], "Redefinir senha da Hcode Store", "forgot", array(
-					"name" => $data['desperson'],
-					"link" => $link
+
+				$mailer = new Mailer($data["desemail"], $data["desperson"], "Redefinir Senha da Hcode Store", "forgot", array(
+					"name"=>$data["desperson"],
+					"link"=>$link
 				));
 
 				$mailer->send();
 
-				return $link;
+				return $data;
 
-            }
+			}
 
 
+		}
 
-        }
-        
-    }
+	}
 
 
 

@@ -77,7 +77,7 @@ $app->post("/admin/products/:idproduct", function($idproduct){
 
 	$product->save();
 
-	$product->setPhoto($_FILES["file"]);
+	if($_FILES["file"]["name"] !== "") $product->setPhoto($_FILES["file"]);
 
 	header('Location: /ecommerce/admin/products');
 	exit;
